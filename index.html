@@ -480,10 +480,10 @@
     var original = statusEl.textContent;
     statusEl.textContent = 'Baixando…';
     var authHeader = { Authorization: 'Bearer ' + accessToken };
-    fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?fields=name', { headers: authHeader })
+    fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?fields=name&supportsAllDrives=true', { headers: authHeader })
       .then(function(r){ if (!r.ok) { var e = new Error('meta'); e.status = r.status; throw e; } return r.json(); })
       .then(function(meta){
-        return fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?alt=media', { headers: authHeader })
+        return fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?alt=media&supportsAllDrives=true', { headers: authHeader })
           .then(function(r){ if (!r.ok) { var e = new Error('media'); e.status = r.status; throw e; } return r.blob(); })
           .then(function(blob){
             var url = URL.createObjectURL(blob);
@@ -499,6 +499,7 @@
       })
       .catch(function(err){
         if (err && err.status === 403) { statusEl.textContent = 'Sem permissão neste arquivo — contate a Coordenação'; }
+        else if (err && err.status === 404) { statusEl.textContent = 'Arquivo não encontrado ou sem permissão — contate a Coordenação'; }
         else if (err && err.status === 401) { statusEl.textContent = 'Sessão expirada — clique em Sair e entre novamente'; }
         else { statusEl.textContent = 'Erro ao baixar — toque para tentar novamente'; }
       });
