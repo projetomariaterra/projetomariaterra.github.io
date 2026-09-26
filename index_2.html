@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APP Maria Terra</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+
+  :root {
+    --bg: #F6F1E6;
+    --surface: #FFFFFF;
+    --surface-2: #EFE7D5;
+    --ink: #23291F;
+    --ink-soft: #4B5240;
+    --muted: #7C8268;
+    --line: #E1D6BE;
+
+    --terra: #C97B4E;
+    --terra-deep: #A85E36;
+    --terra-ink: #FBF0E4;
+    --ring: #7A4B2A;
+    --forest: #24391F;
+    --forest-2: #3A5230;
+    --forest-ink: #F3EFE0;
+    --sage: #7E9A5C;
+    --sage-soft: #E4EAD6;
+
+    --pending-bg: #EFE4C9;
+    --pending-ink: #8A6A2E;
+    --shadow: 0 1px 2px rgba(35,41,31,0.07), 0 8px 20px rgba(35,41,31,0.08);
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17140F;
+      --surface: #211C15;
+      --surface-2: #2A2318;
+      --ink: #EFE9DA;
+      --ink-soft: #C9C0A9;
+      --muted: #93896F;
+      --line: #3B3121;
+
+      --terra: #D98A57;
+      --terra-deep: #C4713D;
+      --terra-ink: #241207;
+      --ring: #A9793F;
+      --forest: #5C8154;
+      --forest-2: #6E9464;
+      --forest-ink: #0E1610;
+      --sage: #9BB87D;
+      --sage-soft: #29331F;
+
+      --pending-bg: #362B14;
+      --pending-ink: #E3C377;
+      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 24px rgba(0,0,0,0.4);
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #17140F;
+    --surface: #211C15;
+    --surface-2: #2A2318;
+    --ink: #EFE9DA;
+    --ink-soft: #C9C0A9;
+    --muted: #93896F;
+    --line: #3B3121;
+
+    --terra: #D98A57;
+    --terra-deep: #C4713D;
+    --terra-ink: #241207;
+    --ring: #A9793F;
+    --forest: #5C8154;
+    --forest-2: #6E9464;
+    --forest-ink: #0E1610;
+    --sage: #9BB87D;
+    --sage-soft: #29331F;
+
+    --pending-bg: #362B14;
+    --pending-ink: #E3C377;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 24px rgba(0,0,0,0.4);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    padding-inline: 16px;
+    padding-block: 28px 40px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  h1, h2, h3 { font-family: 'Bitter', Georgia, serif; text-wrap: balance; margin: 0; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  [hidden] { display: none !important; }
+
+  /* ---------- Layer 0: login ---------- */
+  .login { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .login .gsi-wrap { margin-top: 24px; min-height: 44px; display: flex; justify-content: center; }
+  .gsi-custom-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px 10px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .gsi-custom-btn:hover { border-color: var(--terra); box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+  .gsi-custom-btn:disabled { opacity: 0.6; cursor: default; }
+  .gsi-custom-btn .gsi-g { flex: none; }
+  .login .denied-box {
+    margin-top: 18px;
+    padding: 14px 18px;
+    background: var(--pending-bg);
+    color: var(--pending-ink);
+    border: 1px solid color-mix(in srgb, var(--pending-ink) 45%, transparent);
+    border-radius: 14px;
+    max-width: 46ch;
+    font-size: 13.5px;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .login .denied-box strong {
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .login .hint { margin-top: 16px; font-size: 12.5px; color: var(--muted); max-width: 40ch; line-height: 1.5; }
+
+  /* ---------- session bar ---------- */
+  .session-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .session-bar .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .session-bar .who b { color: var(--ink); }
+  .session-bar .logout-btn {
+    flex: none;
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--terra-deep);
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+  .session-bar .logout-btn:hover { text-decoration: underline; }
+
+  /* ---------- Layer 1: home ---------- */
+  .home { display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+  .logo-wrap { width: 216px; margin-top: 4px; }
+  .logo-wrap img { width: 100%; height: auto; display: block; filter: drop-shadow(0 6px 14px rgba(122,75,42,0.25)); }
+
+  .tagline-eyebrow {
+    margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .tagline {
+    margin-top: 6px;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--forest);
+    max-width: 34ch;
+  }
+  .tagline .accent { color: inherit; }
+
+  .howto {
+    margin-top: 26px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    max-width: 46ch;
+  }
+  .howto h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .howto p { margin: 6px 0 0; font-size: 14px; line-height: 1.55; color: var(--ink); }
+
+  .polo-grid {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+  @media (max-width: 480px) { .polo-grid { grid-template-columns: 1fr; } }
+
+  .polo-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    text-align: left;
+    text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 16px 14px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .polo-btn:hover { border-color: var(--terra); transform: translateY(-2px); }
+  .polo-btn:active { transform: translateY(0); }
+  .polo-btn .no {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--terra-deep);
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 2px 7px;
+  }
+  .polo-btn .name { font-family: 'Bitter', Georgia, serif; font-size: 16.5px; font-weight: 600; color: var(--forest); line-height: 1.2; }
+  .polo-btn .go { margin-top: 2px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+  .polo-btn:hover .go { color: var(--terra-deep); }
+
+  /* ---------- Layer 2: polo detail ---------- */
+  .detail { display: none; flex-direction: column; }
+  .detail.active { display: flex; }
+  .home.hidden-home { display: none; }
+
+  .back-btn {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--forest);
+    cursor: pointer;
+    padding: 6px 2px;
+  }
+  .back-btn:hover { color: var(--terra-deep); }
+
+  .detail-head { margin-top: 10px; display: flex; align-items: center; gap: 12px; }
+  .detail-emblem { width: 44px; height: 44px; flex: none; }
+  .detail-head h1 { font-size: clamp(22px, 6vw, 27px); color: var(--forest); line-height: 1.1; }
+  .detail-head .no {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--terra-deep);
+  }
+
+  .action-list { margin-top: 22px; display: flex; flex-direction: column; gap: 12px; }
+
+  a.big-action, .big-action.pending {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    padding: 16px 16px;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    border: 1px solid transparent;
+  }
+  .big-action .icon {
+    flex: none;
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .big-action .txt { display: flex; flex-direction: column; gap: 2px; }
+  .big-action .txt .t { font-weight: 700; font-size: 15px; }
+  .big-action .txt .d { font-size: 12.5px; opacity: 0.85; }
+  .big-action .arrow { margin-left: auto; opacity: 0.55; font-size: 15px; }
+
+  a.big-action.drp { background: var(--forest); color: var(--forest-ink); }
+  a.big-action.drp .icon { background: rgba(243,239,224,0.15); }
+
+  a.big-action.sol { background: var(--surface); color: var(--ink); border-color: var(--line); }
+  a.big-action.sol .icon { background: var(--sage-soft); color: var(--forest); }
+
+  .big-action.pending {
+    background: var(--pending-bg);
+    color: var(--pending-ink);
+    border: 1px dashed color-mix(in srgb, var(--pending-ink) 45%, transparent);
+  }
+  .big-action.pending .icon { background: rgba(138,106,46,0.14); }
+
+  footer {
+    margin-top: 34px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="login" id="login">
+  <div class="logo-wrap"><img src="logo.png" alt="Logo do Projeto Maria Terra"></div>
+  <p class="tagline-eyebrow">Portal de Campo</p>
+  <p class="tagline">DRP <span class="accent">(Diagnóstico Participativo Rural)</span>, Relatórios e Solicitações</p>
+
+  <div class="howto">
+    <h2>Acesso</h2>
+    <p>Entre com sua conta do Google para continuar.</p>
+  </div>
+
+  <div class="gsi-wrap" id="gsiButton">
+    <button type="button" class="gsi-custom-btn" id="gsiCustomBtn">
+      <svg class="gsi-g" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/>
+        <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.3 35.4 26.8 36 24 36c-5.3 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.3 5.3C40.6 36.4 44 30.8 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+      </svg>
+      <span>Continuar com o Google</span>
+    </button>
+  </div>
+  <div class="denied-box" id="deniedBox" hidden></div>
+  <p class="hint">Apenas contas Google previamente autorizadas pela Coordenação do Projeto têm acesso ao portal, e os documentos só abrem para contas que o proprietário liberou individualmente no Google Drive.</p>
+</div>
+
+<div class="session-bar" id="sessionBar" hidden>
+  <span class="who">Conectado como <b id="sessionEmail"></b></span>
+  <button class="logout-btn" id="logoutBtn" type="button">Sair</button>
+</div>
+
+<div class="home" id="home" hidden>
+  <div class="logo-wrap"><img src="logo.png" alt="Logo do Projeto Maria Terra"></div>
+  <p class="tagline-eyebrow">Portal de Campo</p>
+  <p class="tagline">DRP <span class="accent">(Diagnóstico Participativo Rural)</span>, Relatórios e Solicitações</p>
+
+  <div class="howto">
+    <h2>Como funciona</h2>
+    <p>Sr(a) usuário(a), selecione abaixo o seu polo.</p>
+  </div>
+
+  <div class="polo-grid" id="poloGrid"></div>
+</div>
+
+<div class="detail" id="detail">
+  <button class="back-btn" id="backBtn">← Polos</button>
+  <div class="detail-head">
+    <svg class="detail-emblem" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="47" fill="var(--terra)" stroke="var(--ring)" stroke-width="5"/>
+      <path d="M50 30 C 44 34 41 40 41 46 C 41 46 35 44 33 48 C 36 51 41 51 43 49 C 42 54 40 58 36 61 L 40 61 C 44 58 47 54 48 50 L 48 72 L 52 72 L 52 50 C 53 54 56 58 60 61 L 64 61 C 60 58 58 54 57 49 C 59 51 64 51 67 48 C 65 44 59 46 59 46 C 59 40 56 34 50 30 Z" fill="var(--forest)"/>
+    </svg>
+    <div>
+      <div class="no mono" id="detailNo">POLO 01</div>
+      <h1 id="detailName">Nome do polo</h1>
+    </div>
+  </div>
+
+  <div class="action-list">
+    <a class="big-action drp" id="drpLink" target="_blank" rel="noopener">
+      <span class="icon">📋</span>
+      <span class="txt"><span class="t">Preencher o DRP</span><span class="d">Diagnóstico Participativo Rural</span></span>
+      <span class="arrow">›</span>
+    </a>
+    <button class="big-action sol" id="solBtn" type="button">
+      <span class="icon">📄</span>
+      <span class="txt"><span class="t">Formulários e Modelos</span><span class="d">Documentos e modelos para baixar</span></span>
+      <span class="arrow">›</span>
+    </button>
+    <div class="big-action pending">
+      <span class="icon">📤</span>
+      <span class="txt"><span class="t">Enviar documento preenchido e assinado</span><span class="d">Em construção</span></span>
+      <span class="arrow">em breve</span>
+    </div>
+  </div>
+</div>
+
+<div class="detail" id="docs">
+  <button class="back-btn" id="backBtn2">← Voltar</button>
+  <div class="detail-head">
+    <svg class="detail-emblem" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="47" fill="var(--terra)" stroke="var(--ring)" stroke-width="5"/>
+      <path d="M50 30 C 44 34 41 40 41 46 C 41 46 35 44 33 48 C 36 51 41 51 43 49 C 42 54 40 58 36 61 L 40 61 C 44 58 47 54 48 50 L 48 72 L 52 72 L 52 50 C 53 54 56 58 60 61 L 64 61 C 60 58 58 54 57 49 C 59 51 64 51 67 48 C 65 44 59 46 59 46 C 59 40 56 34 50 30 Z" fill="var(--forest)"/>
+    </svg>
+    <div>
+      <div class="no mono" id="docsNo">POLO 01</div>
+      <h1 id="docsName">Formulários e Modelos</h1>
+    </div>
+  </div>
+  <div class="action-list" id="docsList"></div>
+</div>
+
+<footer>Em caso de dúvidas, contate a Coordenação Geral do Projeto.</footer>
+
+<script>
+(function(){
+  var polos = [
+    { slug: "baixada-cuiabana", name: "Baixada Cuiabana", no: "01", drp: "1CglovOCs3mghjIbV4qrI4KmMnb9LyMe4EgJKEYcPLNQ", sol: "1FcphsRmuFB_3K-e0IB5lqcYMV9JwlZBE",
+      docs: [
+        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1g5zlLL7B3DYiGJ401iCSI-cgmRWOcpGX" },
+        { t: "Relatório de Visita Técnica", id: "1BbAa-pZUFlUKovUC_UP0M5gqJMla4H82" },
+        { t: "Solicitação de Pagamento com Relatório de atividades", id: "1swP6W7HXHlTTTvfJjPsp4K9nDRW38LHu" }
+      ] },
+    { slug: "barra-do-garcas", name: "Barra do Garças", no: "02", drp: "1Wjpm5_m7zSRlnqzIqlju-NNBRdE_PezMSGw9C2llUNs", sol: "1QJ4YHttsp7wAkCYDO-XWQYfBIeuif839",
+      docs: [
+        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1OdxvBBPmX87rHGuZQ73dxKxtfiwzB40y" },
+        { t: "Relatório de Visita Técnica", id: "15ZXH1Nbp_SdIlM8d96x0RyUWPTo5Zz0R" },
+        { t: "Solicitação de Pagamento com Relatório de atividades", id: "1R2bgwMoPKw-e8YeHsD-7dz9dfbwYQMz4" }
+      ] },
+    { slug: "diamantino", name: "Diamantino", no: "03", drp: "1R_-QxC6MEdlAwbFIYTbhLdo-CcmP1ia3Ch7pjqBznnU", sol: "1pNy11Ij5Rk-i-7xEcu8l3NCwkyvXmfZj",
+      docs: [
+        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1tFtps8PmxyCa8BdxN-4FlBTwkATkVtKt" },
+        { t: "Relatório de Visita Técnica", id: "1RChArMgenfEz459HsXk_oepqk6ms15Fy" },
+        { t: "Solicitação de Pagamento com Relatório de atividades", id: "18MIKPe08-ZMXIRssEEZG2o3sk7rpROSP" }
+      ] },
+    { slug: "jaciara", name: "Jaciara", no: "04", drp: "1sdZIJhGzvgCE73P95A7JWxdvWS4plk0rj-AuP5Im1jU", sol: "1tviWSHUGmq484kagXoTotlUg-1uqcYZe",
+      docs: [
+        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "14AjjhlzbX61jC353tyCvFiV38NmXfuOv" },
+        { t: "Relatório de Visita Técnica", id: "1T7pSNYdPQvjr_dDHgR1-V8VnQkdVm3yQ" },
+        { t: "Solicitação de Pagamento com Relatório de atividades", id: "1Zav7XOVIDMa0qzUodYINBmxNZyu6O9gl" }
+      ] },
+    { slug: "jaciara-uned", name: "Jaciara – UNED Nova Brasilândia", no: "05", drp: "1co0lePvunN1RXZ02_fKvMyQTjNefHqwPd3NyygiwzjI", sol: "1DB-tx5Letgv2dpqii8R9OadzdRscGfIl",
+      docs: [
+        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1FObdXNA1atUsLrl4Q_0gQdVKMPUQgpPc" },
+        { t: "Relatório de Visita Técnica", id: "1fhatlYBN-CrSe10DuVy0pJ4lGXVLLf4P" },
+        { t: "Solicitação de Pagamento com Relatório de atividades", id: "1grnGTipd5hyvecCe8zKBOkJ9zdQiWC-N" }
+      ] },
+    { slug: "livramento", name: "Livramento", no: "06", drp: "1AXttqlJeUcmV7Ri_ZPyU7gGz8Pg3JEg0H_8dtsnCJHI", sol: "1gilSqXIahZH_HKFt5FMJhkNYlaOY1JEZ",
+      docs: [
+        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1ZHgi8oTOakFX3pNi3A-RejhmNtSk6lOJ" },
+        { t: "Relatório de Visita Técnica", id: "1gdEg1XTGsburR91Lp2eu5dn4ZqGeA_9T" },
+        { t: "Solicitação de Pagamento com Relatório de atividades", id: "1KLZxockOK9SwoJA9zFNTIFajc_6AW1ZX" }
+      ] }
+  ];
+
+  var formUrl = function(id){ return "https://docs.google.com/forms/d/" + id + "/viewform"; };
+
+  function downloadDoc(d, statusEl) {
+    if (!accessToken || Date.now() > tokenExpiresAt) {
+      statusEl.textContent = 'Sessão expirada — clique em Sair e entre novamente';
+      return;
+    }
+    var original = statusEl.textContent;
+    statusEl.textContent = 'Baixando…';
+    var authHeader = { Authorization: 'Bearer ' + accessToken };
+    fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?fields=name', { headers: authHeader })
+      .then(function(r){ if (!r.ok) { var e = new Error('meta'); e.status = r.status; throw e; } return r.json(); })
+      .then(function(meta){
+        return fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?alt=media', { headers: authHeader })
+          .then(function(r){ if (!r.ok) { var e = new Error('media'); e.status = r.status; throw e; } return r.blob(); })
+          .then(function(blob){
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = meta.name || d.t;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+            statusEl.textContent = original;
+          });
+      })
+      .catch(function(err){
+        if (err && err.status === 403) { statusEl.textContent = 'Sem permissão neste arquivo — contate a Coordenação'; }
+        else if (err && err.status === 401) { statusEl.textContent = 'Sessão expirada — clique em Sair e entre novamente'; }
+        else { statusEl.textContent = 'Erro ao baixar — toque para tentar novamente'; }
+      });
+  }
+
+  // ---- Acesso (Google OAuth2 — identidade + permissão real de leitura no Drive) ----
+  // Login e download de arquivos usam o MESMO token de acesso do Google, com o
+  // escopo drive.readonly. Assim, o download só funciona se a conta que fez login
+  // no portal for exatamente a mesma que o proprietário autorizou no arquivo do
+  // Drive — não depende de qual conta Google está "ativa" no navegador.
+  var GSI_CLIENT_ID = "697845884556-m50qohg5hvg2c6va72mog20h3gtcpso0.apps.googleusercontent.com";
+  var GSI_SCOPES = "openid email profile https://www.googleapis.com/auth/drive.readonly";
+
+  // Lista de e-mails autorizados a ENTRAR no portal. Vazia = qualquer conta Google
+  // autenticada entra (nesta fase de teste do app, o próprio Google já restringe o
+  // login apenas aos e-mails cadastrados como "Usuários de teste" no Google Cloud
+  // Console). O acesso a cada DOCUMENTO, por sua vez, é sempre controlado pelo
+  // compartilhamento do arquivo no Drive, feito pelo proprietário.
+  // Quando a lista oficial da Coordenação estiver pronta, preencha aqui, ex:
+  // var AUTHORIZED_EMAILS = ["tecnico1@gmail.com", "tecnico2@gmail.com"];
+  var AUTHORIZED_EMAILS = [];
+
+  var currentUser = null;
+  var accessToken = null;
+  var tokenExpiresAt = 0;
+  var tokenClient = null;
+
+  var loginEl = document.getElementById('login');
+  var sessionBarEl = document.getElementById('sessionBar');
+  var sessionEmailEl = document.getElementById('sessionEmail');
+  var deniedBoxEl = document.getElementById('deniedBox');
+  var gsiCustomBtnEl = document.getElementById('gsiCustomBtn');
+  var logoutBtnEl = document.getElementById('logoutBtn');
+
+  function showDenied(msg, email) {
+    deniedBoxEl.innerHTML = '<strong>Acesso negado</strong>' + msg.replace('{email}', '<b>' + email + '</b>');
+    deniedBoxEl.hidden = false;
+  }
+
+  function handleTokenResponse(tokenResponse) {
+    gsiCustomBtnEl.disabled = false;
+    if (!tokenResponse || tokenResponse.error) { return; }
+    accessToken = tokenResponse.access_token;
+    tokenExpiresAt = Date.now() + (Number(tokenResponse.expires_in || 3600) * 1000);
+
+    fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    }).then(function(r){
+      if (!r.ok) { throw new Error('userinfo ' + r.status); }
+      return r.json();
+    }).then(function(info){
+      var email = (info.email || '').toLowerCase();
+      if (!info.email_verified) { showDenied('Não foi possível verificar o e-mail da conta {email}.', email); return; }
+      if (AUTHORIZED_EMAILS.length && AUTHORIZED_EMAILS.indexOf(email) === -1) {
+        showDenied('A conta {email} ainda não está autorizada a usar este portal. Contate a Coordenação Geral do Projeto para liberação.', email);
+        return;
+      }
+      currentUser = { email: email, name: info.name, picture: info.picture };
+      loginSuccess();
+    }).catch(function(){
+      showDenied('Não foi possível confirmar sua identidade com o Google. Tente novamente.', '');
+    });
+  }
+
+  function loginSuccess() {
+    deniedBoxEl.hidden = true;
+    loginEl.hidden = true;
+    sessionEmailEl.textContent = currentUser.email;
+    sessionBarEl.hidden = false;
+    homeEl.hidden = false;
+    restoreRoute();
+  }
+
+  function logout() {
+    if (accessToken) { try { google.accounts.oauth2.revoke(accessToken, function(){}); } catch (e) {} }
+    currentUser = null;
+    accessToken = null;
+    tokenExpiresAt = 0;
+    sessionBarEl.hidden = true;
+    homeEl.hidden = true;
+    homeEl.classList.remove('hidden-home');
+    detailEl.classList.remove('active');
+    docsEl.classList.remove('active');
+    deniedBoxEl.hidden = true;
+    loginEl.hidden = false;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    window.scrollTo(0, 0);
+  }
+
+  function waitForGsi(cb) {
+    if (window.google && google.accounts && google.accounts.oauth2) { cb(); }
+    else { setTimeout(function(){ waitForGsi(cb); }, 80); }
+  }
+
+  function initGsi() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GSI_CLIENT_ID,
+      scope: GSI_SCOPES,
+      callback: handleTokenResponse
+    });
+    gsiCustomBtnEl.disabled = false;
+  }
+
+  gsiCustomBtnEl.disabled = true;
+  gsiCustomBtnEl.addEventListener('click', function(){
+    if (!tokenClient) return;
+    gsiCustomBtnEl.disabled = true;
+    deniedBoxEl.hidden = true;
+    tokenClient.requestAccessToken({ prompt: 'select_account' });
+  });
+  logoutBtnEl.addEventListener('click', logout);
+  waitForGsi(initGsi);
+
+  var homeEl = document.getElementById('home');
+  var detailEl = document.getElementById('detail');
+  var docsEl = document.getElementById('docs');
+  var gridEl = document.getElementById('poloGrid');
+  var currentSlug = null;
+
+  polos.forEach(function(p){
+    var btn = document.createElement('button');
+    btn.className = 'polo-btn';
+    btn.type = 'button';
+    btn.innerHTML =
+      '<span class="no mono">POLO ' + p.no + '</span>' +
+      '<span class="name">' + p.name + '</span>' +
+      '<span class="go">Acessar →</span>';
+    btn.addEventListener('click', function(){ showDetail(p.slug); });
+    gridEl.appendChild(btn);
+  });
+
+  function showDetail(slug){
+    var p = polos.find(function(x){ return x.slug === slug; });
+    if (!p) return;
+    currentSlug = slug;
+    document.getElementById('detailNo').textContent = 'POLO ' + p.no;
+    document.getElementById('detailName').textContent = p.name;
+    document.getElementById('drpLink').href = formUrl(p.drp);
+    homeEl.classList.add('hidden-home');
+    detailEl.classList.add('active');
+    docsEl.classList.remove('active');
+    try { location.hash = slug; } catch(e){}
+    window.scrollTo(0,0);
+  }
+
+  function showDocs(slug){
+    var p = polos.find(function(x){ return x.slug === slug; });
+    if (!p) return;
+    currentSlug = slug;
+    document.getElementById('docsNo').textContent = 'POLO ' + p.no;
+    document.getElementById('docsName').textContent = p.name;
+    var list = document.getElementById('docsList');
+    list.innerHTML = '';
+    p.docs.forEach(function(d){
+      var a = document.createElement('a');
+      a.className = 'big-action sol';
+      a.href = 'javascript:void(0)';
+      a.innerHTML = '<span class="icon">⬇️</span><span class="txt"><span class="t">' + d.t + '</span><span class="d">Toque para baixar</span></span><span class="arrow">›</span>';
+      var statusEl = a.querySelector('.d');
+      a.addEventListener('click', function(ev){ ev.preventDefault(); downloadDoc(d, statusEl); });
+      list.appendChild(a);
+    });
+    detailEl.classList.remove('active');
+    docsEl.classList.add('active');
+    try { location.hash = slug + '-docs'; } catch(e){}
+    window.scrollTo(0,0);
+  }
+
+  function showHome(){
+    homeEl.classList.remove('hidden-home');
+    detailEl.classList.remove('active');
+    docsEl.classList.remove('active');
+    try { history.replaceState(null, '', location.pathname + location.search); } catch(e){}
+    window.scrollTo(0,0);
+  }
+
+  document.getElementById('solBtn').addEventListener('click', function(){ showDocs(currentSlug); });
+  document.getElementById('backBtn').addEventListener('click', showHome);
+  document.getElementById('backBtn2').addEventListener('click', function(){ showDetail(currentSlug); });
+
+  function restoreRoute(){
+    var initial = (location.hash || '').replace('#','');
+    if (initial) {
+      if (initial.slice(-5) === '-docs') {
+        var baseSlug = initial.slice(0, -5);
+        if (polos.some(function(p){ return p.slug === baseSlug; })) { showDetail(baseSlug); showDocs(baseSlug); return; }
+      } else if (polos.some(function(p){ return p.slug === initial; })) {
+        showDetail(initial);
+        return;
+      }
+    }
+    showHome();
+  }
+})();
+</script>
+</body>
+</html>
