@@ -446,9 +446,9 @@
       ] },
     { slug: "diamantino", name: "Diamantino", no: "03", drp: "1R_-QxC6MEdlAwbFIYTbhLdo-CcmP1ia3Ch7pjqBznnU", sol: "1pNy11Ij5Rk-i-7xEcu8l3NCwkyvXmfZj",
       docs: [
-        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1tFtps8PmxyCa8BdxN-4FlBTwkATkVtKt" },
-        { t: "Relatório de Visita Técnica", id: "1RChArMgenfEz459HsXk_oepqk6ms15Fy" },
-        { t: "Solicitação de Pagamento com Relatório de atividades", id: "18MIKPe08-ZMXIRssEEZG2o3sk7rpROSP" }
+        { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1vmGO-JkUxofn2JYXYX1s4avnN7ZcdCCBujOHxMQm0Gc" },
+        { t: "Relatório de Visita Técnica", id: "1PYDuXp0kK4nuAUdNxq0wlu5OhrhV4i8dUznWekPNBBQ" },
+        { t: "Solicitação de Pagamento com Relatório de atividades", id: "1CPptU_g17Xu4DQeoVCdRABP0RSGq0yLBXa_CanHdgMc" }
       ] },
     { slug: "jaciara", name: "Jaciara", no: "04", drp: "1sdZIJhGzvgCE73P95A7JWxdvWS4plk0rj-AuP5Im1jU", sol: "1tviWSHUGmq484kagXoTotlUg-1uqcYZe",
       docs: [
@@ -480,16 +480,16 @@
     var original = statusEl.textContent;
     statusEl.textContent = 'Baixando…';
     var authHeader = { Authorization: 'Bearer ' + accessToken };
-    fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?fields=name&supportsAllDrives=true', { headers: authHeader })
+    fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?fields=name,mimeType&supportsAllDrives=true', { headers: authHeader })
       .then(function(r){ if (!r.ok) { var e = new Error('meta'); e.status = r.status; throw e; } return r.json(); })
       .then(function(meta){
-        return fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?alt=media&supportsAllDrives=true', { headers: authHeader })
+        var EXPORT_MIME = { 'application/vnd.google-apps.document': { mime: 'application/pdf', ext: '.pdf' }, 'application/vnd.google-apps.spreadsheet': { mime: 'application/pdf', ext: '.pdf' }, 'application/vnd.google-apps.presentation': { mime: 'application/pdf', ext: '.pdf' } }; var exp = EXPORT_MIME[meta.mimeType]; var downloadUrl = exp ? ('https://www.googleapis.com/drive/v3/files/' + d.id + '/export?mimeType=' + encodeURIComponent(exp.mime)) : ('https://www.googleapis.com/drive/v3/files/' + d.id + '?alt=media&supportsAllDrives=true'); var fileName = exp ? ((meta.name || d.t) + exp.ext) : (meta.name || d.t); return fetch(downloadUrl, { headers: authHeader })
           .then(function(r){ if (!r.ok) { var e = new Error('media'); e.status = r.status; throw e; } return r.blob(); })
           .then(function(blob){
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
-            a.download = meta.name || d.t;
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
