@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>APP Maria Terra</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer onload="window.__gapiLoaded=true;"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
 
@@ -466,18 +467,62 @@
 
   var formUrl = function(id){ return "https://docs.google.com/forms/d/" + id + "/viewform"; };
 
-  function downloadDoc(d, statusEl) {
-    if (!accessToken || Date.now() > tokenExpiresAt) {
-      statusEl.textContent = 'Sessão expirada — clique em Sair e entre novamente';
-      return;
-    }
-    var original = statusEl.textContent;
-    statusEl.textContent = 'Baixando…';
-    var authHeader = { Authorization: 'Bearer ' + accessToken };
-    fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?fields=name,mimeType&supportsAllDrives=true', { headers: authHeader })
+  var pickerLibPromise = null;
+  function ensurePickerLib() {
+    if (pickerLibPromise) return pickerLibPromise;
+    pickerLibPromise = new Promise(function(resolve){
+      var tryLoad = function(){
+        if (window.gapi) {
+          gapi.load('picker', function(){ resolve(); });
+        } else {
+          setTimeout(tryLoad, 150);
+        }
+      };
+      tryLoad();
+    });
+    return pickerLibPromise;
+  }
+
+  function openPickerForFile(d, statusEl, onPicked) {
+    ensurePickerLib().then(function(){
+      var view = new google.picker.DocsView(google.picker.ViewId.DOCS)
+        .setQuery(d.t)
+        .setIncludeFolders(false)
+        .setSelectFolderEnabled(false);
+      var picker = new google.picker.PickerBuilder()
+        .addView(view)
+        .setOAuthToken(accessToken)
+        .setDeveloperKey(PICKER_API_KEY)
+        .setAppId(PICKER_APP_ID)
+        .setTitle('Selecione: ' + d.t)
+        .setCallback(function(data){
+          if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) {
+            onPicked();
+          } else if (data[google.picker.Response.ACTION] === google.picker.Action.CANCEL) {
+            statusEl.textContent = 'Seleção cancelada — toque para tentar novamente';
+          }
+        })
+        .build();
+      picker.setVisible(true);
+    });
+  }
+
+  function reportDownloadError(err, statusEl) {
+    if (err && err.status === 403) { statusEl.textContent = 'Sem permissão neste arquivo — contate a Coordenação'; }
+    else if (err && err.status === 404) { statusEl.textContent = 'Arquivo não encontrado ou sem permissão — contate a Coordenação'; }
+    else if (err && err.status === 401) { statusEl.textContent = 'Sessão expirada — clique em Sair e entre novamente'; }
+    else { statusEl.textContent = 'Erro ao baixar — toque para tentar novamente'; }
+  }
+
+  function attemptDownload(d, statusEl, original, authHeader) {
+    return fetch('https://www.googleapis.com/drive/v3/files/' + d.id + '?fields=name,mimeType&supportsAllDrives=true', { headers: authHeader })
       .then(function(r){ if (!r.ok) { var e = new Error('meta'); e.status = r.status; throw e; } return r.json(); })
       .then(function(meta){
-        var EXPORT_MIME = { 'application/vnd.google-apps.document': { mime: 'application/pdf', ext: '.pdf' }, 'application/vnd.google-apps.spreadsheet': { mime: 'application/pdf', ext: '.pdf' }, 'application/vnd.google-apps.presentation': { mime: 'application/pdf', ext: '.pdf' } }; var exp = EXPORT_MIME[meta.mimeType]; var downloadUrl = exp ? ('https://www.googleapis.com/drive/v3/files/' + d.id + '/export?mimeType=' + encodeURIComponent(exp.mime)) : ('https://www.googleapis.com/drive/v3/files/' + d.id + '?alt=media&supportsAllDrives=true'); var fileName = exp ? ((meta.name || d.t) + exp.ext) : (meta.name || d.t); return fetch(downloadUrl, { headers: authHeader })
+        var EXPORT_MIME = { 'application/vnd.google-apps.document': { mime: 'application/pdf', ext: '.pdf' }, 'application/vnd.google-apps.spreadsheet': { mime: 'application/pdf', ext: '.pdf' }, 'application/vnd.google-apps.presentation': { mime: 'application/pdf', ext: '.pdf' } };
+        var exp = EXPORT_MIME[meta.mimeType];
+        var downloadUrl = exp ? ('https://www.googleapis.com/drive/v3/files/' + d.id + '/export?mimeType=' + encodeURIComponent(exp.mime)) : ('https://www.googleapis.com/drive/v3/files/' + d.id + '?alt=media&supportsAllDrives=true');
+        var fileName = exp ? ((meta.name || d.t) + exp.ext) : (meta.name || d.t);
+        return fetch(downloadUrl, { headers: authHeader })
           .then(function(r){ if (!r.ok) { var e = new Error('media'); e.status = r.status; throw e; } return r.blob(); })
           .then(function(blob){
             var url = URL.createObjectURL(blob);
@@ -490,22 +535,50 @@
             setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
             statusEl.textContent = original;
           });
-      })
-      .catch(function(err){
-        if (err && err.status === 403) { statusEl.textContent = 'Sem permissão neste arquivo — contate a Coordenação'; }
-        else if (err && err.status === 404) { statusEl.textContent = 'Arquivo não encontrado ou sem permissão — contate a Coordenação'; }
-        else if (err && err.status === 401) { statusEl.textContent = 'Sessão expirada — clique em Sair e entre novamente'; }
-        else { statusEl.textContent = 'Erro ao baixar — toque para tentar novamente'; }
       });
+  }
+
+  function downloadDoc(d, statusEl) {
+    if (!accessToken || Date.now() > tokenExpiresAt) {
+      statusEl.textContent = 'Sessão expirada — clique em Sair e entre novamente';
+      return;
+    }
+    var original = statusEl.textContent;
+    var authHeader = { Authorization: 'Bearer ' + accessToken };
+
+    statusEl.textContent = 'Baixando…';
+    attemptDownload(d, statusEl, original, authHeader).catch(function(err){
+      if (err && err.status === 404) {
+        // Ainda não confirmado pelo usuário nesta conta (escopo drive.file) — abre o
+        // seletor oficial do Google uma única vez; depois disso o acesso a este
+        // arquivo fica valendo para as próximas vezes.
+        statusEl.textContent = 'Confirme o arquivo na janela do Google…';
+        openPickerForFile(d, statusEl, function(){
+          statusEl.textContent = 'Baixando…';
+          attemptDownload(d, statusEl, original, authHeader).catch(function(err2){ reportDownloadError(err2, statusEl); });
+        });
+      } else {
+        reportDownloadError(err, statusEl);
+      }
+    });
   }
 
   // ---- Acesso (Google OAuth2 — identidade + permissão real de leitura no Drive) ----
   // Login e download de arquivos usam o MESMO token de acesso do Google, com o
-  // escopo drive.readonly. Assim, o download só funciona se a conta que fez login
-  // no portal for exatamente a mesma que o proprietário autorizou no arquivo do
-  // Drive — não depende de qual conta Google está "ativa" no navegador.
+  // escopo drive.file. Por padrão esse escopo só enxerga arquivos que o próprio
+  // app criou — por isso, na primeira vez que um usuário tenta baixar um arquivo
+  // específico, o Google Picker abre para ele "confirmar" aquele arquivo; essa
+  // confirmação, feita pela interface oficial do Google, é o que libera o acesso
+  // (só funciona, claro, se a conta também tiver permissão real no arquivo do
+  // Drive). Depois da primeira confirmação, os downloads seguintes desse mesmo
+  // arquivo, para essa mesma conta, acontecem direto, sem abrir a janela de novo.
   var GSI_CLIENT_ID = "697845884556-m50qohg5hvg2c6va72mog20h3gtcpso0.apps.googleusercontent.com";
-  var GSI_SCOPES = "openid email profile https://www.googleapis.com/auth/drive.readonly";
+  var GSI_SCOPES = "openid email profile https://www.googleapis.com/auth/drive.file";
+  // Google Picker: usado para o usuário confirmar, uma única vez por arquivo,
+  // qual documento o portal pode acessar — é isso que mantém o escopo drive.file
+  // (não sensível) e evita a tela de "app não verificado" do Google.
+  var PICKER_API_KEY = "AIzaSyDsrcvxrJxTmrxdQbO_3YGQEnKcmffz3Ng";
+  var PICKER_APP_ID = "697845884556";
 
   // Lista de e-mails autorizados a ENTRAR no portal. Vazia = qualquer conta Google
   // autenticada entra (nesta fase de teste do app, o próprio Google já restringe o
