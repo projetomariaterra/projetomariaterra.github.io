@@ -432,31 +432,31 @@
 <script>
 (function(){
   var polos = [
-    { slug: "baixada-cuiabana", name: "IFMT BLV", no: "01", drp: "1CglovOCs3mghjIbV4qrI4KmMnb9LyMe4EgJKEYcPLNQ", sol: "1FcphsRmuFB_3K-e0IB5lqcYMV9JwlZBE",
+    { slug: "baixada-cuiabana", name: "Polo Baixada Cuiabana: IFMT BLV", no: "01", drp: "1CglovOCs3mghjIbV4qrI4KmMnb9LyMe4EgJKEYcPLNQ", sol: "1FcphsRmuFB_3K-e0IB5lqcYMV9JwlZBE",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1g5zlLL7B3DYiGJ401iCSI-cgmRWOcpGX" },
         { t: "Relatório de Visita Técnica", id: "1BbAa-pZUFlUKovUC_UP0M5gqJMla4H82" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1swP6W7HXHlTTTvfJjPsp4K9nDRW38LHu" }
       ] },
-    { slug: "barra-do-garcas", name: "IFMT BAG", no: "02", drp: "1Wjpm5_m7zSRlnqzIqlju-NNBRdE_PezMSGw9C2llUNs", sol: "1QJ4YHttsp7wAkCYDO-XWQYfBIeuif839",
+    { slug: "barra-do-garcas", name: "Polo Barra do Garças: IFMT BAG", no: "02", drp: "1Wjpm5_m7zSRlnqzIqlju-NNBRdE_PezMSGw9C2llUNs", sol: "1QJ4YHttsp7wAkCYDO-XWQYfBIeuif839",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1OdxvBBPmX87rHGuZQ73dxKxtfiwzB40y" },
         { t: "Relatório de Visita Técnica", id: "15ZXH1Nbp_SdIlM8d96x0RyUWPTo5Zz0R" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1R2bgwMoPKw-e8YeHsD-7dz9dfbwYQMz4" }
       ] },
-    { slug: "diamantino", name: "IFMT DMT", no: "03", drp: "1R_-QxC6MEdlAwbFIYTbhLdo-CcmP1ia3Ch7pjqBznnU", sol: "1pNy11Ij5Rk-i-7xEcu8l3NCwkyvXmfZj",
+    { slug: "diamantino", name: "Polo Diamantino: IFMT DMT", no: "03", drp: "1R_-QxC6MEdlAwbFIYTbhLdo-CcmP1ia3Ch7pjqBznnU", sol: "1pNy11Ij5Rk-i-7xEcu8l3NCwkyvXmfZj",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1vmGO-JkUxofn2JYXYX1s4avnN7ZcdCCBujOHxMQm0Gc" },
         { t: "Relatório de Visita Técnica", id: "1PYDuXp0kK4nuAUdNxq0wlu5OhrhV4i8dUznWekPNBBQ" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1CPptU_g17Xu4DQeoVCdRABP0RSGq0yLBXa_CanHdgMc" }
       ] },
-    { slug: "jaciara", name: "IFMT SVC", no: "04", drp: "1sdZIJhGzvgCE73P95A7JWxdvWS4plk0rj-AuP5Im1jU", sol: "1tviWSHUGmq484kagXoTotlUg-1uqcYZe",
+    { slug: "jaciara", name: "Polo Jaciara: IFMT SVC", no: "04", drp: "1sdZIJhGzvgCE73P95A7JWxdvWS4plk0rj-AuP5Im1jU", sol: "1tviWSHUGmq484kagXoTotlUg-1uqcYZe",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "14AjjhlzbX61jC353tyCvFiV38NmXfuOv" },
         { t: "Relatório de Visita Técnica", id: "1T7pSNYdPQvjr_dDHgR1-V8VnQkdVm3yQ" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1Zav7XOVIDMa0qzUodYINBmxNZyu6O9gl" }
       ] },
-    { slug: "livramento", name: "IFMT- VGD", no: "05", drp: "1AXttqlJeUcmV7Ri_ZPyU7gGz8Pg3JEg0H_8dtsnCJHI", sol: "1gilSqXIahZH_HKFt5FMJhkNYlaOY1JEZ",
+    { slug: "livramento", name: "Polo Livramento: IFMT- VGD", no: "05", drp: "1AXttqlJeUcmV7Ri_ZPyU7gGz8Pg3JEg0H_8dtsnCJHI", sol: "1gilSqXIahZH_HKFt5FMJhkNYlaOY1JEZ",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1ZHgi8oTOakFX3pNi3A-RejhmNtSk6lOJ" },
         { t: "Relatório de Visita Técnica", id: "1gdEg1XTGsburR91Lp2eu5dn4ZqGeA_9T" },
@@ -466,11 +466,33 @@
 
   var formUrl = function(id){ return "https://docs.google.com/forms/d/" + id + "/viewform"; };
 
+  // Link nativo do Google Drive para o arquivo: abre na conta Google que o
+  // usuário estiver logado no navegador. O próprio Drive decide se essa conta
+  // pode ver/baixar, com base no compartilhamento que o dono do arquivo já fez
+  // — não passa pelo nosso app nem pela verificação de apps do Google, então
+  // funciona igual para contas pessoais e institucionais (@ifmt.edu.br).
   var driveFileUrl = function(id){ return "https://drive.google.com/open?id=" + id; };
 
+  // ---- Acesso (Google OAuth2 — só identidade; leitura de arquivos é nativa do Drive) ----
+  // O login pede apenas openid/email/profile — nenhum escopo de Drive. Isso serve
+  // só para identificar quem está entrando (conferir e-mail contra a lista de
+  // autorizados abaixo); como não há escopo de Drive envolvido, o Google nunca
+  // mostra a tela de "app não verificado" para essa conta, seja pessoal ou
+  // institucional (@ifmt.edu.br) — esse tipo de escopo nunca exige verificação.
+  // O acesso aos DOCUMENTOS não passa pelo nosso app: cada documento é um link
+  // direto para o Google Drive (ver driveFileUrl acima), e é o próprio Drive quem
+  // decide se a conta logada no navegador pode abri-lo, com base no
+  // compartilhamento que o dono do arquivo já fez individualmente.
   var GSI_CLIENT_ID = "697845884556-m50qohg5hvg2c6va72mog20h3gtcpso0.apps.googleusercontent.com";
   var GSI_SCOPES = "openid email profile";
 
+  // Lista de e-mails autorizados a ENTRAR no portal. Vazia = qualquer conta Google
+  // autenticada entra (nesta fase de teste do app, o próprio Google já restringe o
+  // login apenas aos e-mails cadastrados como "Usuários de teste" no Google Cloud
+  // Console). O acesso a cada DOCUMENTO, por sua vez, é sempre controlado pelo
+  // compartilhamento do arquivo no Drive, feito pelo proprietário.
+  // Quando a lista oficial da Coordenação estiver pronta, preencha aqui, ex:
+  // var AUTHORIZED_EMAILS = ["tecnico1@gmail.com", "tecnico2@gmail.com"];
   var AUTHORIZED_EMAILS = ["jonatas.santos@ifmt.edu.br", "eloisa.azeredo@ifmt.edu.br"];
 
   var currentUser = null;
