@@ -335,8 +335,6 @@
     line-height: 1.6;
   }
 </style>
-</head>
-<body>
 <div class="login" id="login">
   <div class="logo-wrap"><img src="logo.png" alt="Logo do Projeto Maria Terra"></div>
   <p class="tagline-eyebrow">Portal de Campo</p>
@@ -404,11 +402,11 @@
       <span class="txt"><span class="t">Formulários e Modelos</span><span class="d">Documentos e modelos para baixar</span></span>
       <span class="arrow">›</span>
     </button>
-    <div class="big-action pending">
+    <a class="big-action drp" id="envioLink" target="_blank" rel="noopener" style="background: var(--terra); color: var(--terra-ink);">
       <span class="icon">📤</span>
-      <span class="txt"><span class="t">Enviar documento preenchido e assinado</span><span class="d">Em construção</span></span>
-      <span class="arrow">em breve</span>
-    </div>
+      <span class="txt"><span class="t">Enviar documento preenchido e assinado</span><span class="d">TCLE, Relatório de Visita ou Solicitação de Pagamento</span></span>
+      <span class="arrow">›</span>
+    </a>
   </div>
 </div>
 
@@ -432,31 +430,31 @@
 <script>
 (function(){
   var polos = [
-    { slug: "baixada-cuiabana", name: "Polo Baixada Cuiabana: IFMT BLV", no: "01", drp: "1CglovOCs3mghjIbV4qrI4KmMnb9LyMe4EgJKEYcPLNQ", sol: "1FcphsRmuFB_3K-e0IB5lqcYMV9JwlZBE",
+    { slug: "baixada-cuiabana", name: "Polo Baixada Cuiabana: IFMT BLV", no: "01", drp: "1CglovOCs3mghjIbV4qrI4KmMnb9LyMe4EgJKEYcPLNQ", sol: "1FcphsRmuFB_3K-e0IB5lqcYMV9JwlZBE", envio: "1uy7X6zarZbvTvrLNIVWUfQs3PdCO7zhbBBhuHCCkt0A",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1g5zlLL7B3DYiGJ401iCSI-cgmRWOcpGX" },
         { t: "Relatório de Visita Técnica", id: "1BbAa-pZUFlUKovUC_UP0M5gqJMla4H82" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1swP6W7HXHlTTTvfJjPsp4K9nDRW38LHu" }
       ] },
-    { slug: "barra-do-garcas", name: "Polo Barra do Garças: IFMT BAG", no: "02", drp: "1Wjpm5_m7zSRlnqzIqlju-NNBRdE_PezMSGw9C2llUNs", sol: "1QJ4YHttsp7wAkCYDO-XWQYfBIeuif839",
+    { slug: "barra-do-garcas", name: "Polo Barra do Garças: IFMT BAG", no: "02", drp: "1Wjpm5_m7zSRlnqzIqlju-NNBRdE_PezMSGw9C2llUNs", sol: "1QJ4YHttsp7wAkCYDO-XWQYfBIeuif839", envio: "1EvGa7Uz8Ti2B4yVeGxBR7-YVNsyVPgTrB0cubNYXa2g",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1OdxvBBPmX87rHGuZQ73dxKxtfiwzB40y" },
         { t: "Relatório de Visita Técnica", id: "15ZXH1Nbp_SdIlM8d96x0RyUWPTo5Zz0R" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1R2bgwMoPKw-e8YeHsD-7dz9dfbwYQMz4" }
       ] },
-    { slug: "diamantino", name: "Polo Diamantino: IFMT DMT", no: "03", drp: "1R_-QxC6MEdlAwbFIYTbhLdo-CcmP1ia3Ch7pjqBznnU", sol: "1pNy11Ij5Rk-i-7xEcu8l3NCwkyvXmfZj",
+    { slug: "diamantino", name: "Polo Diamantino: IFMT DMT", no: "03", drp: "1R_-QxC6MEdlAwbFIYTbhLdo-CcmP1ia3Ch7pjqBznnU", sol: "1pNy11Ij5Rk-i-7xEcu8l3NCwkyvXmfZj", envio: "19ej5jlF77Bl2mbuRvcluea2lgNVfS4xZZZctpaUqxoA",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1vmGO-JkUxofn2JYXYX1s4avnN7ZcdCCBujOHxMQm0Gc" },
         { t: "Relatório de Visita Técnica", id: "1PYDuXp0kK4nuAUdNxq0wlu5OhrhV4i8dUznWekPNBBQ" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1CPptU_g17Xu4DQeoVCdRABP0RSGq0yLBXa_CanHdgMc" }
       ] },
-    { slug: "jaciara", name: "Polo Jaciara: IFMT SVC", no: "04", drp: "1sdZIJhGzvgCE73P95A7JWxdvWS4plk0rj-AuP5Im1jU", sol: "1tviWSHUGmq484kagXoTotlUg-1uqcYZe",
+    { slug: "jaciara", name: "Polo Jaciara: IFMT SVC", no: "04", drp: "1sdZIJhGzvgCE73P95A7JWxdvWS4plk0rj-AuP5Im1jU", sol: "1tviWSHUGmq484kagXoTotlUg-1uqcYZe", envio: "1n5YikIPdRqUya46ecRUCJWGGLaJR69Mc89r00_XXKVE",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "14AjjhlzbX61jC353tyCvFiV38NmXfuOv" },
         { t: "Relatório de Visita Técnica", id: "1T7pSNYdPQvjr_dDHgR1-V8VnQkdVm3yQ" },
         { t: "Solicitação de Pagamento com Relatório de atividades", id: "1Zav7XOVIDMa0qzUodYINBmxNZyu6O9gl" }
       ] },
-    { slug: "livramento", name: "Polo Livramento: IFMT- VGD", no: "05", drp: "1AXttqlJeUcmV7Ri_ZPyU7gGz8Pg3JEg0H_8dtsnCJHI", sol: "1gilSqXIahZH_HKFt5FMJhkNYlaOY1JEZ",
+    { slug: "livramento", name: "Polo Livramento: IFMT- VGD", no: "05", drp: "1AXttqlJeUcmV7Ri_ZPyU7gGz8Pg3JEg0H_8dtsnCJHI", sol: "1gilSqXIahZH_HKFt5FMJhkNYlaOY1JEZ", envio: "108dnBpcJXQY7WweTsNnz7AAVbtMOB4k_1xKdiZ8Ol3s",
       docs: [
         { t: "Termo de Consentimento Livre e Esclarecido (TCLE)", id: "1ZHgi8oTOakFX3pNi3A-RejhmNtSk6lOJ" },
         { t: "Relatório de Visita Técnica", id: "1gdEg1XTGsburR91Lp2eu5dn4ZqGeA_9T" },
@@ -611,6 +609,7 @@
     document.getElementById('detailNo').textContent = 'POLO ' + p.no;
     document.getElementById('detailName').textContent = p.name;
     document.getElementById('drpLink').href = formUrl(p.drp);
+    document.getElementById('envioLink').href = formUrl(p.envio);
     homeEl.classList.add('hidden-home');
     detailEl.classList.add('active');
     docsEl.classList.remove('active');
@@ -668,5 +667,6 @@
   }
 })();
 </script>
+
 </body>
 </html>
