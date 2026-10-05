@@ -500,7 +500,48 @@
   // compartilhamento do arquivo no Drive, feito pelo proprietário.
   // Quando a lista oficial da Coordenação estiver pronta, preencha aqui, ex:
   // var AUTHORIZED_EMAILS = ["tecnico1@gmail.com", "tecnico2@gmail.com"];
-  var AUTHORIZED_EMAILS = ["jonatas.santos@ifmt.edu.br", "eloisa.azeredo@ifmt.edu.br", "vitale.neto@ufmt.br"];
+  // Quem pode entrar e o que cada pessoa enxerga.
+  //   "*"        = todos os polos (Coordenação).
+  //   ["polo"]   = apenas o(s) polo(s) indicado(s) (e os formulários dele).
+  // Os e-mails devem estar em letras minúsculas.
+  var ACESSO = {
+    // Coordenação: todos os polos
+    "jonatas.santos@ifmt.edu.br": "*",
+    "eloisa.azeredo@ifmt.edu.br": "*",
+    "vitale.neto@ufmt.br": "*",
+    // Polo jaciara
+    "marleide.araujo@ifmt.edu.br": ["jaciara"],
+    "thiago.svc2015@hotmail.com": ["jaciara"],
+    "deyse_scorpioni@hotmail.com": ["jaciara"],
+    "paulabioagro@gmail.com": ["jaciara"],
+    "elizetecsa.bio@gmail.com": ["jaciara"],
+    // Polo baixada-cuiabana
+    "thiago.silva@ifmt.edu.br": ["baixada-cuiabana"],
+    "rrssmmoraes@gmail.com": ["baixada-cuiabana"],
+    "fellipe_bte@hotmail.com": ["baixada-cuiabana"],
+    "christianedaniel@gmail.com": ["baixada-cuiabana"],
+    // Polo livramento
+    "isabela.lucena@ifmt.edu.br": ["livramento"],
+    "macosjoseagron1@gmail.com": ["livramento"],
+    "fabiana.cta@gmail.com": ["livramento"],
+    "biancaleticia.pereira@gmail.com": ["livramento"],
+    // Polo diamantino
+    "campos.filho@ifmt.edu.br": ["diamantino"],
+    "antoniobap.martins@gmail.com": ["diamantino"],
+    "carla.ealencar@gmail.com": ["diamantino"],
+    "marechallucas.97@gmail.com": ["diamantino"],
+    // Polo barra-do-garcas
+    "fernanda.dias@ifmt.edu.br": ["barra-do-garcas"],
+    "lauro_ross@hotmail.com": ["barra-do-garcas"]
+  };
+  var AUTHORIZED_EMAILS = Object.keys(ACESSO);
+
+  // O usuário logado pode abrir este polo?
+  function canAccess(slug) {
+    if (!currentUser) { return false; }
+    var a = ACESSO[currentUser.email];
+    return a === "*" || (Array.isArray(a) && a.indexOf(slug) !== -1);
+  }
 
   var currentUser = null;
   var accessToken = null;
@@ -550,6 +591,9 @@
     sessionEmailEl.textContent = currentUser.email;
     sessionBarEl.hidden = false;
     homeEl.hidden = false;
+    Array.prototype.forEach.call(gridEl.querySelectorAll('.polo-btn'), function(b){
+      b.style.display = canAccess(b.getAttribute('data-slug')) ? '' : 'none';
+    });
     restoreRoute();
   }
 
@@ -607,13 +651,14 @@
       '<span class="no mono">POLO ' + p.no + '</span>' +
       '<span class="name">' + p.name + '</span>' +
       '<span class="go">Acessar →</span>';
+    btn.setAttribute('data-slug', p.slug);
     btn.addEventListener('click', function(){ showDetail(p.slug); });
     gridEl.appendChild(btn);
   });
 
   function showDetail(slug){
     var p = polos.find(function(x){ return x.slug === slug; });
-    if (!p) return;
+    if (!p || !canAccess(slug)) return;
     currentSlug = slug;
     document.getElementById('detailNo').textContent = 'POLO ' + p.no;
     document.getElementById('detailName').textContent = p.name;
@@ -628,7 +673,7 @@
 
   function showDocs(slug){
     var p = polos.find(function(x){ return x.slug === slug; });
-    if (!p) return;
+    if (!p || !canAccess(slug)) return;
     currentSlug = slug;
     document.getElementById('docsNo').textContent = 'POLO ' + p.no;
     document.getElementById('docsName').textContent = p.name;
